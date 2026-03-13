@@ -526,6 +526,31 @@
     }
   }
 
+  const FIELDS = ['price','downAmt','downPct','rate','term','ins','tax','startMonth','startYear'];
+
+  function saveData() {
+    const data = {};
+    FIELDS.forEach(id => { data[id] = document.getElementById(id).value; });
+    localStorage.setItem('mortgageCalc', JSON.stringify(data));
+  }
+
+  function loadData() {
+    try {
+      const data = JSON.parse(localStorage.getItem('mortgageCalc'));
+      if (!data) return;
+      FIELDS.forEach(id => {
+        if (data[id] !== undefined) document.getElementById(id).value = data[id];
+      });
+    } catch(e) {}
+  }
+
+  // Patch all inputs to also save on change
+  FIELDS.forEach(id => {
+    document.getElementById(id).addEventListener('input', saveData);
+  });
+
+  // Load saved data then calculate
+  loadData();
   calc();
 </script>
 </body>
