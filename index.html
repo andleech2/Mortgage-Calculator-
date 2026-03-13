@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabin Mortgage Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #f0fdfa 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 60px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: white;
+    border: 2px solid #99f6e4;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(15,118,110,0.10), 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+    animation: rise 0.5s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  @keyframes rise {
+    from { opacity:0; transform: translateY(24px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
+    padding: 28px 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '🏕️';
+    position: absolute;
+    right: 24px;
+    top: 12px;
+    font-size: 56px;
+    opacity: 0.18;
+    transform: rotate(-8deg);
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .header p {
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .body {
+    padding: 28px 32px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #0d9488;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #ccfbf1;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field.full { grid-column: span 2; }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #475569;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .prefix, .suffix {
+    position: absolute;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 13px;
+    color: #94a3b8;
+    pointer-events: none;
+    user-select: none;
+  }
+  .prefix { left: 11px; }
+  .suffix { right: 11px; }
+
+  input[type=number], input[type=text] {
+    width: 100%;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    color: #1e293b;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 15px;
+    padding: 9px 11px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input:focus {
+    outline: none;
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+  }
+
+  .has-prefix input  { padding-left: 24px; }
+  .has-suffix input  { padding-right: 32px; }
+
+  /* Down payment dual fields */
+  .dp-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dp-row .input-wrap { flex: 1; }
+
+  .dp-divider {
+    color: #cbd5e1;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .divider {
+    border: none;
+    border-top: 2px solid #f1f5f9;
+    margin: 4px 0 20px;
+  }
+
+  /* Output panel */
+  .output {
+    background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    color: white;
+  }
+
+  .output-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .output-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+  }
+
+  .output-amount {
+    font-size: 44px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .output-mo {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    align-self: flex-end;
+    padding-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .breakdown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .bk-item { display: flex; flex-direction: column; gap: 3px; }
+  .bk-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+  .bk-value { font-family: 'Source Code Pro', monospace; font-size: 14px; color: white; font-weight: 600; }
+
+  /* Balloon panel */
+  .balloon {
+    background: linear-gradient(135deg, #f8fafc 0%, #f0fdfa 100%);
+    border: 2px solid #99f6e4;
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+
+  .balloon-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .balloon-icon {
+    font-size: 18px;
+  }
+
+  .balloon-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0d9488;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .balloon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .bal-item { display: flex; flex-direction: column; gap: 3px; }
+  .bal-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
+  .bal-value { font-family: 'Source Code Pro', monospace; font-size: 16px; color: #1e293b; font-weight: 600; }
+  .bal-value.accent { color: #dc2626; font-size: 20px; }
+  .bal-value.green { color: #0d9488; }
+
+  .note {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 12px;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  @media (max-width: 520px) {
+    .grid { grid-template-columns: 1fr; }
+    .field.full { grid-column: span 1; }
+    .breakdown { grid-template-columns: 1fr 1fr; }
+    .balloon-grid { grid-template-columns: 1fr; }
+    .body { padding: 20px 16px; }
+    .header { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1>Cabin Mortgage Calculator</h1>
+    <p>30-Year Fixed · Balloon Tracker</p>
+  </div>
+
+  <div class="body">
+    <div class="section-label">Loan Details</div>
+
+    <div class="grid">
+      <div class="field">
+        <label>Cabin Price</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix">$</span>
+          <input type="number" id="price" value="350000" min="0" step="1000" oninput="syncFromAmt(); calc()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Down Payment</label>
+        <div class="dp-row">
+          <div class="input-wrap has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="downAmt" value="70000" min="0" step="500" oninput="syncFromAmt()">
+          </div>
+          <span class="dp-divider">/</span>
+          <div class="input-wrap has-suffix" style="max-width:90px">
+            <input type="number" id="downPct" value="20" min="0" max="100" step="0.1" oninput="syncFromPct()">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Interest Rate</label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="rate" value="6.75" min="0" max="25" step="0.01" oninput="calc()">
+          <span class="suffix">%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Loan Term</label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="term" value="30" min="1" max="30" step="1" oninput="calc()">
+          <span class="suffix">yrs</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Monthly Insurance</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix">$</span>
+          <input type="number" id="ins" value="120" min="0" step="1" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Yearly Property Tax</label>
+        <div class="input-wrap has-prefix">
+          <span class="prefix">$</span>
+          <input type="number" id="tax" value="3200" min="0" step="100" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>First Payment Date</label>
+        <div class="dp-row">
+          <div class="input-wrap has-suffix" style="max-width:90px">
+            <input type="number" id="startMonth" value="5" min="1" max="12" step="1" oninput="calc()">
+            <span class="suffix" style="font-size:11px">mo</span>
+          </div>
+          <span class="dp-divider">/</span>
+          <div class="input-wrap">
+            <input type="number" id="startYear" value="2026" min="2020" max="2060" step="1" oninput="calc()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Output -->
+    <div class="output">
+      <div class="output-label">Total Monthly Payment</div>
+      <div class="output-main">
+        <div class="output-amount" id="totalPayment">—</div>
+        <div class="output-mo">/mo</div>
+      </div>
+      <div class="breakdown">
+        <div class="bk-item">
+          <div class="bk-label">Principal &amp; Int</div>
+          <div class="bk-value" id="piOut">—</div>
+        </div>
+        <div class="bk-item">
+          <div class="bk-label">Insurance</div>
+          <div class="bk-value" id="insOut">—</div>
+        </div>
+        <div class="bk-item">
+          <div class="bk-label">Tax (mo)</div>
+          <div class="bk-value" id="taxOut">—</div>
+        </div>
+        <div class="bk-item">
+          <div class="bk-label">Loan Amount</div>
+          <div class="bk-value" id="loanOut">—</div>
+        </div>
+        <div class="bk-item">
+          <div class="bk-label">Down Payment</div>
+          <div class="bk-value" id="downOut">—</div>
+        </div>
+        <div class="bk-item">
+          <div class="bk-label">Interest to Nov '30</div>
+          <div class="bk-value" id="intTotalOut">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Balloon section -->
+    <div class="balloon">
+      <div class="balloon-header">
+        <span class="balloon-icon">🎈</span>
+        <span class="balloon-title">Land Sale Balloon · November 2030</span>
+      </div>
+      <div class="balloon-grid">
+        <div class="bal-item">
+          <div class="bal-label">Balloon Payment</div>
+          <div class="bal-value green">$275,000</div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-label">Balance Owed (Nov 2030)</div>
+          <div class="bal-value accent" id="balanceAtBalloon">—</div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-label">Payments Made by Then</div>
+          <div class="bal-value" id="paymentsBy">—</div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-label">Remaining After Balloon</div>
+          <div class="bal-value" id="afterBalloon">—</div>
+        </div>
+      </div>
+      <div class="note" id="balloonNote">—</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function syncFromAmt() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const amt   = parseFloat(document.getElementById('downAmt').value) || 0;
+    const pct   = price > 0 ? (amt / price * 100) : 0;
+    document.getElementById('downPct').value = parseFloat(pct.toFixed(2));
+    calc();
+  }
+
+  function syncFromPct() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const pct   = parseFloat(document.getElementById('downPct').value) || 0;
+    document.getElementById('downAmt').value = Math.round(price * pct / 100);
+    calc();
+  }
+
+  function getDownAbs() {
+    return parseFloat(document.getElementById('downAmt').value) || 0;
+  }
+
+  function calc() {
+    const price      = parseFloat(document.getElementById('price').value) || 0;
+    const downAbs    = getDownAbs();
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const termYrs    = parseFloat(document.getElementById('term').value) || 30;
+    const insMonthly = parseFloat(document.getElementById('ins').value) || 0;
+    const taxYearly  = parseFloat(document.getElementById('tax').value) || 0;
+    const startMonth = parseInt(document.getElementById('startMonth').value) || 1;
+    const startYear  = parseInt(document.getElementById('startYear').value) || 2026;
+
+    const loan = Math.max(price - downAbs, 0);
+    const r    = annualRate / 100 / 12;
+    const n    = termYrs * 12;
+    const taxMonthly = taxYearly / 12;
+
+    let pi = 0;
+    if (loan > 0 && r > 0 && n > 0) {
+      pi = loan * (r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1);
+    } else if (loan > 0 && r === 0 && n > 0) {
+      pi = loan / n;
+    }
+
+    const total = pi + insMonthly + taxMonthly;
+
+    // Balloon date: November 2030
+    const balloonYear  = 2030;
+    const balloonMonth = 11;
+
+    // Payments made = months from first payment to balloon month (inclusive)
+    let paymentsMade = (balloonYear - startYear) * 12 + (balloonMonth - startMonth) + 1;
+    paymentsMade = Math.max(0, Math.min(paymentsMade, n));
+
+    // Balance remaining after paymentsMade payments
+    let balance = loan;
+    if (r > 0) {
+      balance = loan * Math.pow(1+r, paymentsMade) - pi * (Math.pow(1+r, paymentsMade) - 1) / r;
+    } else if (n > 0) {
+      balance = loan - (loan / n) * paymentsMade;
+    }
+    balance = Math.max(balance, 0);
+
+    // Interest paid through balloon = total paid - principal paid
+    const principalPaid = loan - balance;
+    const interestToBalloon = Math.max((pi * paymentsMade) - principalPaid, 0);
+
+    document.getElementById('totalPayment').textContent = total > 0 ? fmt(total) : '—';
+    document.getElementById('piOut').textContent = fmt(pi);
+    document.getElementById('insOut').textContent = fmt(insMonthly);
+    document.getElementById('taxOut').textContent = fmt(taxMonthly);
+    document.getElementById('loanOut').textContent = fmt(loan);
+    document.getElementById('downOut').textContent = fmt(downAbs);
+    document.getElementById('intTotalOut').textContent = fmt(interestToBalloon);
+
+    const balloonAmt = 275000;
+    const remaining  = balance - balloonAmt;
+
+    document.getElementById('balanceAtBalloon').textContent = fmt(balance);
+    document.getElementById('paymentsBy').textContent = paymentsMade + ' payments';
+
+    if (balance <= 0) {
+      document.getElementById('afterBalloon').textContent = fmt(0);
+      document.getElementById('balloonNote').textContent = 'Loan fully paid before November 2030.';
+    } else if (remaining <= 0) {
+      document.getElementById('afterBalloon').textContent = fmt(0) + ' 🎉';
+      document.getElementById('afterBalloon').style.color = '#7ec87e';
+      document.getElementById('balloonNote').textContent =
+        `Your $275,000 land sale covers the full remaining balance — and leaves you ${fmt(-remaining)} to spare. Loan would be paid off entirely.`;
+    } else {
+      document.getElementById('afterBalloon').textContent = fmt(remaining);
+      document.getElementById('afterBalloon').style.color = '#e07060';
+      document.getElementById('balloonNote').textContent =
+        `After applying your $275,000 balloon payment in November 2030, you'd still owe ${fmt(remaining)} on the mortgage. You'd need to refinance or continue making payments on the remaining balance.`;
+    }
+  }
+
+  calc();
+</script>
+</body>
+</html>
